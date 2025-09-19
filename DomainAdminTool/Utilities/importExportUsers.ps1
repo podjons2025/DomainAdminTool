@@ -1,126 +1,126 @@
 <#
 .SYNOPSIS
-ADÓÃ»§ÅúÁ¿´´½¨º¯Êı£¨Ö§³Ö¸´ĞÕ£©
+ADç”¨æˆ·æ‰¹é‡åˆ›å»ºå‡½æ•°ï¼ˆæ”¯æŒå¤å§“ï¼‰
 #>
 
 function ImportCSVAndCreateUsers {	
     if (-not $script:domainContext) {
-        [System.Windows.Forms.MessageBox]::Show("ÇëÏÈÁ¬½Óµ½Óò¿Ø", "ÌáÊ¾", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
+        [System.Windows.Forms.MessageBox]::Show("è¯·å…ˆè¿æ¥åˆ°åŸŸæ§", "æç¤º", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
         return
     }	
 
-    # ´ò¿ªÎÄ¼şÑ¡Ôñ¶Ô»°¿ò
+    # æ‰“å¼€æ–‡ä»¶é€‰æ‹©å¯¹è¯æ¡†
     $fileDialog = New-Object System.Windows.Forms.OpenFileDialog
-    $fileDialog.Filter = "CSVÎÄ¼ş (*.csv)|*.csv|ËùÓĞÎÄ¼ş (*.*)|*.*"
-    $fileDialog.Title = "Ñ¡Ôñ°üº¬ÓÃ»§ĞÅÏ¢µÄCSVÎÄ¼ş"
+    $fileDialog.Filter = "CSVæ–‡ä»¶ (*.csv)|*.csv|æ‰€æœ‰æ–‡ä»¶ (*.*)|*.*"
+    $fileDialog.Title = "é€‰æ‹©åŒ…å«ç”¨æˆ·ä¿¡æ¯çš„CSVæ–‡ä»¶"
     
     if ($fileDialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) {
         $csvPath = $fileDialog.FileName
-        $script:connectionStatus = "ÕıÔÚ´¦ÀíCSVÎÄ¼ş: $([System.IO.Path]::GetFileName($csvPath))"
+        $script:connectionStatus = "æ­£åœ¨å¤„ç†CSVæ–‡ä»¶: $([System.IO.Path]::GetFileName($csvPath))"
         $script:mainForm.Refresh()
 
         try {
-            # ¼ì²éCSVÎÄ¼şÊÇ·ñ´æÔÚ
+            # æ£€æŸ¥CSVæ–‡ä»¶æ˜¯å¦å­˜åœ¨
             if (-not (Test-Path -Path $csvPath -PathType Leaf)) {
-                [System.Windows.Forms.MessageBox]::Show("CSVÎÄ¼ş²»´æÔÚ: $csvPath", "´íÎó", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+                [System.Windows.Forms.MessageBox]::Show("CSVæ–‡ä»¶ä¸å­˜åœ¨: $csvPath", "é”™è¯¯", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
                 return
             }
 
-            # ¶ÁÈ¡CSVÎÄ¼ş
+            # è¯»å–CSVæ–‡ä»¶
             try {
                 $users = Import-Csv -Path $csvPath -Encoding Default -ErrorAction Stop
                 $userCount = $users | Measure-Object | Select-Object -ExpandProperty Count
-                $script:connectionStatus = "³É¹¦¶ÁÈ¡CSVÎÄ¼ş£¬¹²·¢ÏÖ $userCount ¸öÓÃ»§¼ÇÂ¼"
+                $script:connectionStatus = "æˆåŠŸè¯»å–CSVæ–‡ä»¶ï¼Œå…±å‘ç° $userCount ä¸ªç”¨æˆ·è®°å½•"
                 $script:mainForm.Refresh()
             } catch {
-                [System.Windows.Forms.MessageBox]::Show("¶ÁÈ¡CSVÎÄ¼şÊ§°Ü: $_", "´íÎó", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+                [System.Windows.Forms.MessageBox]::Show("è¯»å–CSVæ–‡ä»¶å¤±è´¥: $_", "é”™è¯¯", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
                 return
             }
 
-            # ÏÔÊ¾È·ÈÏ¶Ô»°¿ò
+            # æ˜¾ç¤ºç¡®è®¤å¯¹è¯æ¡†
             $confirmResult = [System.Windows.Forms.MessageBox]::Show(
-                "·¢ÏÖ $userCount ¸öÕËºÅ¼ÇÂ¼£¬ÊÇ·ñÈ·¶¨µ¼Èë²¢´´½¨ÕâĞ©ÓÃ»§£¿",
-                "È·ÈÏµ¼Èë",
+                "å‘ç° $userCount ä¸ªè´¦å·è®°å½•ï¼Œæ˜¯å¦ç¡®å®šå¯¼å…¥å¹¶åˆ›å»ºè¿™äº›ç”¨æˆ·ï¼Ÿ",
+                "ç¡®è®¤å¯¼å…¥",
                 [System.Windows.Forms.MessageBoxButtons]::YesNo,
                 [System.Windows.Forms.MessageBoxIcon]::Question
             )
 
             if ($confirmResult -ne [System.Windows.Forms.DialogResult]::Yes) {
-                $script:connectionStatus = "ÓÃ»§È¡ÏûÁËµ¼Èë²Ù×÷"
+                $script:connectionStatus = "ç”¨æˆ·å–æ¶ˆäº†å¯¼å…¥æ“ä½œ"
                 return
             }
 
-            # ½«ÓÃ»§Êı¾İĞòÁĞ»¯Îª×Ö·û´®£¬ÒÔ±ãÔÚÔ¶³Ì»á»°ÖĞÊ¹ÓÃ
+            # å°†ç”¨æˆ·æ•°æ®åºåˆ—åŒ–ä¸ºå­—ç¬¦ä¸²ï¼Œä»¥ä¾¿åœ¨è¿œç¨‹ä¼šè¯ä¸­ä½¿ç”¨
             $usersJson = $users | ConvertTo-Json
             
-            $script:connectionStatus = "ÕıÔÚÔ¶³Ì´´½¨ÓÃ»§..."
+            $script:connectionStatus = "æ­£åœ¨è¿œç¨‹åˆ›å»ºç”¨æˆ·..."
             $script:mainForm.Refresh()
 
-            # Ö´ĞĞÔ¶³Ì²Ù×÷
+            # æ‰§è¡Œè¿œç¨‹æ“ä½œ
             $result = Invoke-Command -Session $script:remoteSession -ScriptBlock {
                 param($usersJson, $NameOU)
                 
-                # ³õÊ¼»¯½á¹û¶ÔÏó£¬Ìí¼ÓÏêÏ¸ĞÅÏ¢ÊôĞÔ
+                # åˆå§‹åŒ–ç»“æœå¯¹è±¡ï¼Œæ·»åŠ è¯¦ç»†ä¿¡æ¯å±æ€§
                 $result = [PSCustomObject]@{
                     TotalUsers = 0
                     CreatedUsers = 0
                     SkippedUsers = 0
-                    ExistingUsers = @()  # ´æ´¢ÒÑ´æÔÚµÄÓÃ»§ĞÅÏ¢
+                    ExistingUsers = @()  # å­˜å‚¨å·²å­˜åœ¨çš„ç”¨æˆ·ä¿¡æ¯
                     TotalGroups = 0
                     CreatedGroups = 0
-                    CreatedGroupsDetails = @()  # ´æ´¢´´½¨³É¹¦µÄ×éĞÅÏ¢
+                    CreatedGroupsDetails = @()  # å­˜å‚¨åˆ›å»ºæˆåŠŸçš„ç»„ä¿¡æ¯
                     ErrorLogs = @()
-                    CreatedUsersDetails = @()  # ´æ´¢´´½¨³É¹¦µÄÓÃ»§ÏêÇé
+                    CreatedUsersDetails = @()  # å­˜å‚¨åˆ›å»ºæˆåŠŸçš„ç”¨æˆ·è¯¦æƒ…
                 }
 
-                # ·´ĞòÁĞ»¯ÓÃ»§Êı¾İ
+                # ååºåˆ—åŒ–ç”¨æˆ·æ•°æ®
                 try {
                     $users = $usersJson | ConvertFrom-Json
                     $result.TotalUsers = $users.Count
                 }
                 catch {
-                    $result.ErrorLogs += "½âÎöÓÃ»§Êı¾İÊ§°Ü: $_"
+                    $result.ErrorLogs += "è§£æç”¨æˆ·æ•°æ®å¤±è´¥: $_"
                     return $result
                 }
 
-                # ¼ì²éADÄ£¿é
+                # æ£€æŸ¥ADæ¨¡å—
                 if (-not (Get-Module -Name ActiveDirectory -ListAvailable)) {
-                    $result.ErrorLogs += "Active DirectoryÄ£¿éÎ´°²×°¡£Çë°²×°RSAT¹¤¾ßÖĞµÄADÄ£¿é¡£"
+                    $result.ErrorLogs += "Active Directoryæ¨¡å—æœªå®‰è£…ã€‚è¯·å®‰è£…RSATå·¥å…·ä¸­çš„ADæ¨¡å—ã€‚"
                     return $result
                 }
                 try {
                     Import-Module ActiveDirectory -ErrorAction Stop
                 }
                 catch {
-                    $result.ErrorLogs += "µ¼ÈëActive DirectoryÄ£¿éÊ§°Ü: $_"
+                    $result.ErrorLogs += "å¯¼å…¥Active Directoryæ¨¡å—å¤±è´¥: $_"
                     return $result
                 }
 
-                # -------------------------- ĞÂÔö£º¸´ĞÕÁĞ±í --------------------------
+                # -------------------------- æ–°å¢ï¼šå¤å§“åˆ—è¡¨ --------------------------
                 $doubleSurnames = @(
-                    "Å·Ñô", "Ì«Ê·", "¶ËÄ¾", "ÉÏ¹Ù", "Ë¾Âí", "¶«·½", "¶À¹Â", "ÄÏ¹¬",
-                    "ÍòÙ¹", "ÎÅÈË", "ÏÄºî", "Öî¸ğ", "Î¾³Ù", "¹«Ñò", "ºÕÁ¬", "å£Ì¨",
-                    "»Ê¸¦", "×ÚÕş", "å§Ñô", "¹«Ò±", "Ì«Êå", "ÉêÍÀ", "¹«Ëï", "Ä½Èİ",
-                    "ÖÓÀë", "³¤Ëï", "Ë¾Í½", "ÏÊÓÚ", "Ë¾¿Õ", "ØÁ¹Ù", "Ë¾¿Ü", "Øë¶½",
-                    "×Ó³µ", "ò§Ëï", "¶ËÄ¾", "Î×Âí", "¹«Î÷", "Æáµñ", "ÀÖÕı", "ÈÀæá",
-                    "¹«Á¼", "ÍØ°Ï", "¼Ğ¹È", "Ô×¸¸", "¹ÈÁº", "¶Î¸É", "°ÙÀï", "ºôÑÓ",
-                    "¶«¹ù", "ÄÏÃÅ", "ÑòÉà", "Î¢Éú", "×óÇğ", "¶«ÃÅ", "Î÷ÃÅ", "µÚÎå",
-                    "ÑÔ¸£", "Áõ¸¶", "ÏàÀï", "×ÓÊé", "¼´Ä«", "´ïŞÉ", "ñÒÊ¦", "¿öºó",
-                    "ÁºÇğ", "¶«¹¬", "ÖÙ³¤", "ÇüÍ»", "¶ûÖì", "ÄÉÀ¼", "Ä½Èİ", "Î¾³Ù",
-                    "¿ÉÆµ", "æü¶¹Áê", "ËŞÇÚ", "°¢µø", "õúÂÉ", "ß³ÂÀ", "ºØÈô", "Íº·¢",
-                    "Æò·ü", "ØÇµÒ", "ÎÚ¹ÅÂÛ", "¹ÅÀï", "¼Ğ¹È", "ÆÑ²ì", "Å®ŞÉÁÒ", "Ø£ÑÕ",
-                    "Ë¹³Â", "Ëï²®", "¹éº£", "ºóÊÏ", "ÓĞÊÏ", "ÇÙÊÏ", "Ò±ÊÏ", "À÷ÊÏ"
+                    "æ¬§é˜³", "å¤ªå²", "ç«¯æœ¨", "ä¸Šå®˜", "å¸é©¬", "ä¸œæ–¹", "ç‹¬å­¤", "å—å®«",
+                    "ä¸‡ä¿Ÿ", "é—»äºº", "å¤ä¾¯", "è¯¸è‘›", "å°‰è¿Ÿ", "å…¬ç¾Š", "èµ«è¿", "æ¾¹å°",
+                    "çš‡ç”«", "å®—æ”¿", "æ¿®é˜³", "å…¬å†¶", "å¤ªå”", "ç”³å± ", "å…¬å­™", "æ…•å®¹",
+                    "é’Ÿç¦»", "é•¿å­™", "å¸å¾’", "é²œäº", "å¸ç©º", "äº“å®˜", "å¸å¯‡", "ä»‰ç£",
+                    "å­è½¦", "é¢›å­™", "ç«¯æœ¨", "å·«é©¬", "å…¬è¥¿", "æ¼†é›•", "ä¹æ­£", "å£¤é©·",
+                    "å…¬è‰¯", "æ‹“è·‹", "å¤¹è°·", "å®°çˆ¶", "è°·æ¢", "æ®µå¹²", "ç™¾é‡Œ", "å‘¼å»¶",
+                    "ä¸œéƒ­", "å—é—¨", "ç¾ŠèˆŒ", "å¾®ç”Ÿ", "å·¦ä¸˜", "ä¸œé—¨", "è¥¿é—¨", "ç¬¬äº”",
+                    "è¨€ç¦", "åˆ˜ä»˜", "ç›¸é‡Œ", "å­ä¹¦", "å³å¢¨", "è¾¾å¥š", "è¤šå¸ˆ", "å†µå",
+                    "æ¢ä¸˜", "ä¸œå®«", "ä»²é•¿", "å±ˆçª", "å°”æœ±", "çº³å…°", "æ…•å®¹", "å°‰è¿Ÿ",
+                    "å¯é¢‘", "çº¥è±†é™µ", "å®¿å‹¤", "é˜¿è·Œ", "æ–›å¾‹", "å±å•", "è´ºè‹¥", "ç§ƒå‘",
+                    "ä¹ä¼", "åç‹„", "ä¹Œå¤è®º", "å¤é‡Œ", "å¤¹è°·", "è’²å¯Ÿ", "å¥³å¥šçƒˆ", "å…€é¢œ",
+                    "æ–¯é™ˆ", "å­™ä¼¯", "å½’æµ·", "åæ°", "æœ‰æ°", "ç´æ°", "å†¶æ°", "å‰æ°"
                 )
                 # -------------------------------------------------------------------
 
-                # ¼ì²éÓÃ»§¶ÔÏóÊÇ·ñÓĞGroupÊôĞÔ
+                # æ£€æŸ¥ç”¨æˆ·å¯¹è±¡æ˜¯å¦æœ‰Groupå±æ€§
                 $hasGroupProperty = $false
                 if ($users.Count -gt 0) {
                     $firstUser = $users[0]
                     $hasGroupProperty = $firstUser.PSObject.Properties.Name -contains "Group"
                 }
 
-                # ÊÕ¼¯²¢´´½¨ËùĞèµÄ×é
+                # æ”¶é›†å¹¶åˆ›å»ºæ‰€éœ€çš„ç»„
                 if ($hasGroupProperty) {
                     $groups = $users | Where-Object { -not [string]::IsNullOrWhiteSpace($_.Group) } | Select-Object -ExpandProperty Group -Unique
                     $result.TotalGroups = $groups.Count
@@ -128,84 +128,84 @@ function ImportCSVAndCreateUsers {
                     if ($groups.Count -gt 0) {
                         foreach ($group in $groups) {
                             try {
-                                # ¼ì²é×éÊÇ·ñ´æÔÚ
+                                # æ£€æŸ¥ç»„æ˜¯å¦å­˜åœ¨
                                 $existingGroup = Get-ADGroup -Identity $group -ErrorAction Stop
                             }
                             catch [Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException] {
-                                # ×é²»´æÔÚ£¬³¢ÊÔ´´½¨
+                                # ç»„ä¸å­˜åœ¨ï¼Œå°è¯•åˆ›å»º
                                 try {
                                     if ([string]::IsNullOrWhiteSpace($NameOU)) {
-                                        $result.ErrorLogs += "ÎŞ·¨È·¶¨×é $group µÄOU£¬Ìø¹ı´´½¨"
+                                        $result.ErrorLogs += "æ— æ³•ç¡®å®šç»„ $group çš„OUï¼Œè·³è¿‡åˆ›å»º"
                                         continue
                                     }
                                     
-                                    # ÑéÖ¤OUÊÇ·ñ´æÔÚ
+                                    # éªŒè¯OUæ˜¯å¦å­˜åœ¨
                                     if (-not (Get-ADOrganizationalUnit -Filter "DistinguishedName -eq '$NameOU'" -ErrorAction SilentlyContinue) -and
                                         -not (Get-ADObject -Filter "DistinguishedName -eq '$NameOU'" -ErrorAction SilentlyContinue)) {
-                                        $result.ErrorLogs += "×éµÄÄ¿±êOU²»´æÔÚ: $NameOU£¬ÎŞ·¨´´½¨×é $group"
+                                        $result.ErrorLogs += "ç»„çš„ç›®æ ‡OUä¸å­˜åœ¨: $NameOUï¼Œæ— æ³•åˆ›å»ºç»„ $group"
                                         continue
                                     }
                                     
-                                    # ´´½¨×é²ÎÊı
+                                    # åˆ›å»ºç»„å‚æ•°
                                     $groupParams = @{
                                         Name            = $group
                                         SamAccountName  = $group
                                         GroupCategory   = "Security"
                                         GroupScope      = "Global"
                                         Path            = $NameOU
-                                        Description     = "Çë¸ü¸Ä×éÃèÊö£¨×Ô¶¯´´½¨£©: $group"
+                                        Description     = "è¯·æ›´æ”¹ç»„æè¿°ï¼ˆè‡ªåŠ¨åˆ›å»ºï¼‰: $group"
                                         ErrorAction     = "Stop"
                                     }
                                     
                                     New-ADGroup @groupParams
                                     $result.CreatedGroups++
-                                    $result.CreatedGroupsDetails += $group  # ¼ÇÂ¼´´½¨³É¹¦µÄ×éÃû
+                                    $result.CreatedGroupsDetails += $group  # è®°å½•åˆ›å»ºæˆåŠŸçš„ç»„å
                                 }
                                 catch {
-                                    $result.ErrorLogs += "´´½¨×é $group Ê§°Ü: $($_.Exception.Message)"
+                                    $result.ErrorLogs += "åˆ›å»ºç»„ $group å¤±è´¥: $($_.Exception.Message)"
                                 }
                             }
                             catch {
-                                $result.ErrorLogs += "¼ì²é×é $group Ê±·¢Éú´íÎó: $_"
+                                $result.ErrorLogs += "æ£€æŸ¥ç»„ $group æ—¶å‘ç”Ÿé”™è¯¯: $_"
                             }
                         }
                     }
                 }
 
-                # ´´½¨ÓÃ»§
+                # åˆ›å»ºç”¨æˆ·
                 foreach ($user in $users) {
                     try {
-                        # ¼ì²éÓÃ»§ÊÇ·ñÒÑ´æÔÚ
+                        # æ£€æŸ¥ç”¨æˆ·æ˜¯å¦å·²å­˜åœ¨
                         $existingUser = Get-ADUser -Identity $user.SamAccountName -Properties DisplayName -ErrorAction Stop
                         
-                        # ¼ÇÂ¼ÒÑ´æÔÚµÄÓÃ»§ĞÅÏ¢
+                        # è®°å½•å·²å­˜åœ¨çš„ç”¨æˆ·ä¿¡æ¯
                         $result.ExistingUsers += [PSCustomObject]@{
                             SamAccountName = $existingUser.SamAccountName
                             DisplayName = $existingUser.DisplayName
                         }
                         
-                        $result.ErrorLogs += "ÓÃ»§ $($user.SamAccountName) ÒÑ´æÔÚ£¬Ìø¹ı´´½¨"
+                        $result.ErrorLogs += "ç”¨æˆ· $($user.SamAccountName) å·²å­˜åœ¨ï¼Œè·³è¿‡åˆ›å»º"
                         $result.SkippedUsers++
                         continue
                     }
                     catch [Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException] {
-                        # ÓÃ»§²»´æÔÚ£¬¼ÌĞø´´½¨Á÷³Ì
+                        # ç”¨æˆ·ä¸å­˜åœ¨ï¼Œç»§ç»­åˆ›å»ºæµç¨‹
                     }
                     catch {
-                        $result.ErrorLogs += "¼ì²éÓÃ»§ $($user.SamAccountName) Ê±·¢Éú´íÎó: $_"
+                        $result.ErrorLogs += "æ£€æŸ¥ç”¨æˆ· $($user.SamAccountName) æ—¶å‘ç”Ÿé”™è¯¯: $_"
                         $result.SkippedUsers++
                         continue
                     }
                     
-                    # ×Ö¶ÎÑéÖ¤
+                    # å­—æ®µéªŒè¯
                     $requiredFields = 'SamAccountName'
                     if ($missingFields = $requiredFields | Where-Object { [string]::IsNullOrWhiteSpace($user.$_) }) {
-                        $result.ErrorLogs += "ÓÃ»§¼ÇÂ¼È±ÉÙ±ØÌî×Ö¶Î: $($missingFields -join ', ')£¬Ìø¹ı"
+                        $result.ErrorLogs += "ç”¨æˆ·è®°å½•ç¼ºå°‘å¿…å¡«å­—æ®µ: $($missingFields -join ', ')ï¼Œè·³è¿‡"
                         $result.SkippedUsers++
                         continue
                     }
 
-                    # ÃÜÂëÉú³É
+                    # å¯†ç ç”Ÿæˆ
                     $plainPassword = if (-not [string]::IsNullOrWhiteSpace($user.Password)) { 
                         $user.Password 
                     } else { 
@@ -213,11 +213,11 @@ function ImportCSVAndCreateUsers {
                     }
                     $securePassword = ConvertTo-SecureString $plainPassword -AsPlainText -Force
 
-                    # ´¦Àí¹ıÆÚÈÕÆÚ
+                    # å¤„ç†è¿‡æœŸæ—¥æœŸ
                     $accountExpirationDate = $null
                     if (-not [string]::IsNullOrWhiteSpace($user.AccountExpirationDate)) {
                         try {
-                            # ½âÎöCSVÖĞµÄÈÕÆÚ
+                            # è§£æCSVä¸­çš„æ—¥æœŸ
 							if ($user.AccountExpirationDate -match '^\d{4}\.\d{2}\.\d{2}$') {
 								$date = [DateTime]::ParseExact($user.AccountExpirationDate, "yyyy.MM.dd", [System.Globalization.CultureInfo]::InvariantCulture)
 							} elseif ($user.AccountExpirationDate -match '^\d{2}/\d{2}/\d{4}$') {
@@ -230,39 +230,39 @@ function ImportCSVAndCreateUsers {
 								$date = [DateTime]::ParseExact($user.AccountExpirationDate, "yyyyMMdd", [System.Globalization.CultureInfo]::InvariantCulture)
 							} elseif ($user.AccountExpirationDate -match '^\d{4}/\d{2}/\d{2}$') {
 								$date = [DateTime]::ParseExact($user.AccountExpirationDate, "yyyy/MM/dd", [System.Globalization.CultureInfo]::InvariantCulture)
-							} elseif ($user.AccountExpirationDate -match '^\d{4}Äê\d{2}ÔÂ\d{2}ÈÕ$') {
-								$date = [DateTime]::ParseExact($user.AccountExpirationDate, "yyyy'Äê'MM'ÔÂ'dd'ÈÕ'", [System.Globalization.CultureInfo]::InvariantCulture)
+							} elseif ($user.AccountExpirationDate -match '^\d{4}å¹´\d{2}æœˆ\d{2}æ—¥$') {
+								$date = [DateTime]::ParseExact($user.AccountExpirationDate, "yyyy'å¹´'MM'æœˆ'dd'æ—¥'", [System.Globalization.CultureInfo]::InvariantCulture)
 							} else {
-                                # ³¢ÊÔÍ¨ÓÃ½âÎö
+                                # å°è¯•é€šç”¨è§£æ
                                 $date = [DateTime]::Parse($user.AccountExpirationDate)
                             }
-                            # ½«Ê±¼äÉèÖÃÎªµ±ÌìµÄ23:59:59
+                            # å°†æ—¶é—´è®¾ç½®ä¸ºå½“å¤©çš„23:59:59
                             $accountExpirationDate = $date.Date.AddDays(1).AddSeconds(-1)
                         }
                         catch {
-                            $result.ErrorLogs += "ÎŞ·¨½âÎö¹ıÆÚÈÕÆÚ: $($user.AccountExpirationDate)£¬½«²»ÉèÖÃ¹ıÆÚÈÕÆÚ"
+                            $result.ErrorLogs += "æ— æ³•è§£æè¿‡æœŸæ—¥æœŸ: $($user.AccountExpirationDate)ï¼Œå°†ä¸è®¾ç½®è¿‡æœŸæ—¥æœŸ"
                         }
                     }
 
-                    # -------------------------- ¸´ĞÕ²ğ·ÖÂß¼­ --------------------------
-                    # 1. ÓÅÏÈÊ¹ÓÃCSVÖĞµÄSurname/GivenName×Ö¶Î£»ÈôÎŞ£¬Ôò´ÓDisplayName/NameÌáÈ¡
+                    # -------------------------- å¤å§“æ‹†åˆ†é€»è¾‘ --------------------------
+                    # 1. ä¼˜å…ˆä½¿ç”¨CSVä¸­çš„Surname/GivenNameå­—æ®µï¼›è‹¥æ— ï¼Œåˆ™ä»DisplayName/Nameæå–
                     $fullName = $null
                     if (-not [string]::IsNullOrWhiteSpace($user.Surname) -and -not [string]::IsNullOrWhiteSpace($user.GivenName)) {
                         $surname = $user.Surname.Trim()
                         $givenName = $user.GivenName.Trim()
                     } else {
-                        # ´ÓDisplayName»òName×Ö¶Î»ñÈ¡ÍêÕûĞÕÃû£¨CSVĞèÖÁÉÙÓĞÒ»¸ö£©
+                        # ä»DisplayNameæˆ–Nameå­—æ®µè·å–å®Œæ•´å§“åï¼ˆCSVéœ€è‡³å°‘æœ‰ä¸€ä¸ªï¼‰
                         if (-not [string]::IsNullOrWhiteSpace($user.DisplayName)) {
                             $fullName = $user.DisplayName.Trim()
                         } elseif (-not [string]::IsNullOrWhiteSpace($user.Name)) {
                             $fullName = $user.Name.Trim()
                         } else {
-                            $result.ErrorLogs += "ÓÃ»§ $($user.SamAccountName) È±ÉÙĞÕÃû×Ö¶Î£¨DisplayName/Name£©£¬ÎŞ·¨²ğ·ÖĞÕºÍÃû"
+                            $result.ErrorLogs += "ç”¨æˆ· $($user.SamAccountName) ç¼ºå°‘å§“åå­—æ®µï¼ˆDisplayName/Nameï¼‰ï¼Œæ— æ³•æ‹†åˆ†å§“å’Œå"
                             $result.SkippedUsers++
                             continue
                         }
 
-                        # 2. ¸´ĞÕÊ¶±ğÓë²ğ·Ö
+                        # 2. å¤å§“è¯†åˆ«ä¸æ‹†åˆ†
                         if ($fullName.Length -ge 2 -and $doubleSurnames -contains $fullName.Substring(0, 2)) {
                             $surname = $fullName.Substring(0, 2)
                             $givenName = if ($fullName.Length -gt 2) { $fullName.Substring(2).Trim() } else { "" }
@@ -273,15 +273,15 @@ function ImportCSVAndCreateUsers {
                     }
                     # -------------------------------------------------------------------
 
-                    # »ñÈ¡µ±Ç°ÓòĞÅÏ¢
+                    # è·å–å½“å‰åŸŸä¿¡æ¯
                     $domain = Get-ADDomain
                     
-                    # ÓÃ»§²ÎÊı£¨SurnameºÍGivenName£©
+                    # ç”¨æˆ·å‚æ•°ï¼ˆSurnameå’ŒGivenNameï¼‰
 					$userParams = @{
 						SamAccountName        = $user.SamAccountName
 						UserPrincipalName     = if ($user.UserPrincipalName) { $user.UserPrincipalName } else { "$($user.SamAccountName)@$($domain.DNSRoot)" }
 						Name                  = $user.SamAccountName
-						DisplayName           = if ($user.DisplayName) { $user.DisplayName } else { if ($fullName) { $fullName } else { $user.SamAccountName } }  # ĞŞ¸´ºóµÄ¼æÈİÓï·¨
+						DisplayName           = if ($user.DisplayName) { $user.DisplayName } else { if ($fullName) { $fullName } else { $user.SamAccountName } }  # ä¿®å¤åçš„å…¼å®¹è¯­æ³•
 						Surname               = $surname
 						GivenName             = $givenName
 						Path                  = $NameOU
@@ -294,25 +294,25 @@ function ImportCSVAndCreateUsers {
 						ErrorAction           = "Stop"
 					}
 
-                    # Ö»ÓĞ½âÎö³É¹¦Ê±²ÅÌí¼Ó¹ıÆÚÈÕÆÚ²ÎÊı
+                    # åªæœ‰è§£ææˆåŠŸæ—¶æ‰æ·»åŠ è¿‡æœŸæ—¥æœŸå‚æ•°
                     if ($accountExpirationDate) {
                         $userParams['AccountExpirationDate'] = $accountExpirationDate.AddDays(1)
                     }
 
-                    # ÇåÀí¿Õ²ÎÊı
+                    # æ¸…ç†ç©ºå‚æ•°
                     $keysToRemove = $userParams.Keys | Where-Object { 
                         $null -eq $userParams[$_] -or [string]::IsNullOrWhiteSpace($userParams[$_]) 
                     }
                     $keysToRemove | ForEach-Object { $userParams.Remove($_) }
 
-                    # ´´½¨ÓÃ»§
+                    # åˆ›å»ºç”¨æˆ·
                     try {
                         New-ADUser @userParams
                         $result.CreatedUsers++
                         
-                        # ¼ÇÂ¼´´½¨³É¹¦µÄÓÃ»§ÏêÇé£¨Surname/GivenName£©
+                        # è®°å½•åˆ›å»ºæˆåŠŸçš„ç”¨æˆ·è¯¦æƒ…ï¼ˆSurname/GivenNameï¼‰
                         $result.CreatedUsersDetails += [PSCustomObject]@{
-                            Index = $result.CreatedUsers  # ¼ÇÂ¼ĞòºÅ
+                            Index = $result.CreatedUsers  # è®°å½•åºå·
                             SamAccountName = $user.SamAccountName
                             DisplayName = $userParams.DisplayName
                             Surname = $surname
@@ -322,17 +322,17 @@ function ImportCSVAndCreateUsers {
                             Password = $plainPassword
                         }
                         
-                        # ½«ÓÃ»§Ìí¼Óµ½×é
+                        # å°†ç”¨æˆ·æ·»åŠ åˆ°ç»„
                         if ($hasGroupProperty -and -not [string]::IsNullOrWhiteSpace($user.Group)) {
-                            # ÔÙ´Î¼ì²é×éÊÇ·ñ´æÔÚ
+                            # å†æ¬¡æ£€æŸ¥ç»„æ˜¯å¦å­˜åœ¨
                             if (Get-ADGroup -Identity $user.Group -ErrorAction SilentlyContinue) {
                                 Add-ADGroupMember -Identity $user.Group -Members $user.SamAccountName -ErrorAction Stop
                             } else {
-                                $result.ErrorLogs += "×é $($user.Group) ²»´æÔÚ£¬ÎŞ·¨½«ÓÃ»§ $($user.SamAccountName) Ìí¼Óµ½¸Ã×é"
+                                $result.ErrorLogs += "ç»„ $($user.Group) ä¸å­˜åœ¨ï¼Œæ— æ³•å°†ç”¨æˆ· $($user.SamAccountName) æ·»åŠ åˆ°è¯¥ç»„"
                             }
                         }
                     } catch {
-                        $result.ErrorLogs += "´´½¨ÓÃ»§ $($user.SamAccountName) Ê§°Ü: $($_.Exception.Message)"
+                        $result.ErrorLogs += "åˆ›å»ºç”¨æˆ· $($user.SamAccountName) å¤±è´¥: $($_.Exception.Message)"
                         $result.SkippedUsers++
                     }
                 }
@@ -340,58 +340,58 @@ function ImportCSVAndCreateUsers {
                 return $result
             } -ArgumentList $usersJson, $script:currentOU -ErrorAction Stop
 
-            # Æ´½Ó½á¹ûĞÅÏ¢£¨ĞÂÔöSurname/GivenNameÕ¹Ê¾£©
+            # æ‹¼æ¥ç»“æœä¿¡æ¯ï¼ˆæ–°å¢Surname/GivenNameå±•ç¤ºï¼‰
             $msg = @"
-ÅúÁ¿´´½¨Íê³É£¡
+æ‰¹é‡åˆ›å»ºå®Œæˆï¼
 ========================================
-×ÜÓÃ»§Êı£º$($result.TotalUsers)
-³É¹¦´´½¨£º$($result.CreatedUsers)
-Ìø¹ıÓÃ»§£º$($result.SkippedUsers)
-´´½¨×éÊı£º$($result.CreatedGroups)/$($result.TotalGroups)
+æ€»ç”¨æˆ·æ•°ï¼š$($result.TotalUsers)
+æˆåŠŸåˆ›å»ºï¼š$($result.CreatedUsers)
+è·³è¿‡ç”¨æˆ·ï¼š$($result.SkippedUsers)
+åˆ›å»ºç»„æ•°ï¼š$($result.CreatedGroups)/$($result.TotalGroups)
 ========================================
 
 "@
 
-            # Ìí¼Ó³É¹¦´´½¨µÄ×é
+            # æ·»åŠ æˆåŠŸåˆ›å»ºçš„ç»„
             if ($result.CreatedGroups -gt 0) {
-                $msg += "³É¹¦´´½¨µÄ×é£º`n$($result.CreatedGroupsDetails -join '¡¢')`n`n"
+                $msg += "æˆåŠŸåˆ›å»ºçš„ç»„ï¼š`n$($result.CreatedGroupsDetails -join 'ã€')`n`n"
 				LoadGroupList
             }
 
-            # Ìí¼ÓÒÑ´æÔÚµÄÓÃ»§
+            # æ·»åŠ å·²å­˜åœ¨çš„ç”¨æˆ·
             if ($result.ExistingUsers.Count -gt 0) {
-                $msg += "ÒÑ´æÔÚµÄÓÃ»§£º`n"
+                $msg += "å·²å­˜åœ¨çš„ç”¨æˆ·ï¼š`n"
                 $result.ExistingUsers | ForEach-Object {
-                    $msg += "$($_.SamAccountName)£¨$($_.DisplayName)£©`n"
+                    $msg += "$($_.SamAccountName)ï¼ˆ$($_.DisplayName)ï¼‰`n"
                 }
                 $msg += "`n"
             }
 
-            # Ìí¼Ó´´½¨³É¹¦µÄÓÃ»§£¨º¬¸´ĞÕĞÅÏ¢£©
+            # æ·»åŠ åˆ›å»ºæˆåŠŸçš„ç”¨æˆ·ï¼ˆå«å¤å§“ä¿¡æ¯ï¼‰
             if ($result.CreatedUsers -gt 0) {
-                $msg += "´´½¨³É¹¦µÄÓÃ»§£¨³õÊ¼ÃÜÂë£©£º`n"
+                $msg += "åˆ›å»ºæˆåŠŸçš„ç”¨æˆ·ï¼ˆåˆå§‹å¯†ç ï¼‰ï¼š`n"
                 $result.CreatedUsersDetails | ForEach-Object {
-                    $msg += "$($_.SamAccountName) | ĞÕÃû£º$($_.DisplayName) | ÃÜÂë£º$($_.Password)`n"
+                    $msg += "$($_.SamAccountName) | å§“åï¼š$($_.DisplayName) | å¯†ç ï¼š$($_.Password)`n"
                 }
                 $msg += "`n"
             }
 
-            # Ìí¼Ó´íÎóĞÅÏ¢
+            # æ·»åŠ é”™è¯¯ä¿¡æ¯
 			if ($errorLogs.Count -gt 0) {
-				$msg += "`n´íÎóĞÅÏ¢£º`n$($errorLogs -join "`r`n")`n"
+				$msg += "`né”™è¯¯ä¿¡æ¯ï¼š`n$($errorLogs -join "`r`n")`n"
 			}
 
-            # ÏÔÊ¾½á¹û¶Ô»°¿ò
-            [System.Windows.Forms.MessageBox]::Show($msg, "ÅúÁ¿´´½¨½á¹û", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
+            # æ˜¾ç¤ºç»“æœå¯¹è¯æ¡†
+            [System.Windows.Forms.MessageBox]::Show($msg, "æ‰¹é‡åˆ›å»ºç»“æœ", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
 
-            # Ë¢ĞÂÓÃ»§ÁĞ±í
+            # åˆ·æ–°ç”¨æˆ·åˆ—è¡¨
             LoadUserList
-            $script:connectionStatus = "ÅúÁ¿´´½¨ÓÃ»§²Ù×÷ÒÑÍê³É"
+            $script:connectionStatus = "æ‰¹é‡åˆ›å»ºç”¨æˆ·æ“ä½œå·²å®Œæˆ"
         }
         catch {
-            $script:connectionStatus = "ÅúÁ¿´´½¨ÓÃ»§Ê§°Ü: $($_.Exception.Message)"
+            $script:connectionStatus = "æ‰¹é‡åˆ›å»ºç”¨æˆ·å¤±è´¥: $($_.Exception.Message)"
             $statusOutputLabel.ForeColor = [System.Drawing.Color]::DarkRed
-            [System.Windows.Forms.MessageBox]::Show("Ö´ĞĞÅúÁ¿´´½¨Ê±·¢Éú´íÎó: $($_.Exception.Message)", "´íÎó", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+            [System.Windows.Forms.MessageBox]::Show("æ‰§è¡Œæ‰¹é‡åˆ›å»ºæ—¶å‘ç”Ÿé”™è¯¯: $($_.Exception.Message)", "é”™è¯¯", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
 			
         }
     }
@@ -401,154 +401,154 @@ function ImportCSVAndCreateUsers {
 
 <#
 .SYNOPSIS
-ADÓÃ»§ÅúÁ¿µ¼³öº¯Êı£¨Ö§³Ö¸´ĞÕÕ¹Ê¾£©
+ADç”¨æˆ·æ‰¹é‡å¯¼å‡ºå‡½æ•°ï¼ˆæ”¯æŒå¤å§“å±•ç¤ºï¼‰
 #>
 
 function ExportCSVUsers {	
-    # 1. Ç°ÖÃĞ£Ñé£ºÓòÁ¬½Ó+Ô¶³Ì»á»°ÊÇ·ñÓĞĞ§
+    # 1. å‰ç½®æ ¡éªŒï¼šåŸŸè¿æ¥+è¿œç¨‹ä¼šè¯æ˜¯å¦æœ‰æ•ˆ
     if (-not $script:domainContext) {
-        [System.Windows.Forms.MessageBox]::Show("ÇëÏÈÁ¬½Óµ½Óò¿Ø", "ÌáÊ¾", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
+        [System.Windows.Forms.MessageBox]::Show("è¯·å…ˆè¿æ¥åˆ°åŸŸæ§", "æç¤º", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
         return
     }
     if (-not $script:remoteSession -or $script:remoteSession.State -ne "Opened") {
-        [System.Windows.Forms.MessageBox]::Show("Ô¶³Ì»á»°Î´½¨Á¢»òÒÑ¶Ï¿ª£¬ÇëÖØĞÂÁ¬½ÓÓò¿Ø", "´íÎó", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+        [System.Windows.Forms.MessageBox]::Show("è¿œç¨‹ä¼šè¯æœªå»ºç«‹æˆ–å·²æ–­å¼€ï¼Œè¯·é‡æ–°è¿æ¥åŸŸæ§", "é”™è¯¯", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
         return
     }
 
-    # 2. ±¾µØÎÄ¼ş±£´æ¶Ô»°¿ò£¨¿Í»§¶ËÑ¡ÔñÂ·¾¶£©
+    # 2. æœ¬åœ°æ–‡ä»¶ä¿å­˜å¯¹è¯æ¡†ï¼ˆå®¢æˆ·ç«¯é€‰æ‹©è·¯å¾„ï¼‰
     $fileDialog = New-Object System.Windows.Forms.SaveFileDialog
-    $fileDialog.Filter = "CSVÎÄ¼ş (*.csv)|*.csv|ËùÓĞÎÄ¼ş (*.*)|*.*"
-    $fileDialog.Title = "Ñ¡ÔñADÓÃ»§ĞÅÏ¢µÄµ¼³öÂ·¾¶"
+    $fileDialog.Filter = "CSVæ–‡ä»¶ (*.csv)|*.csv|æ‰€æœ‰æ–‡ä»¶ (*.*)|*.*"
+    $fileDialog.Title = "é€‰æ‹©ADç”¨æˆ·ä¿¡æ¯çš„å¯¼å‡ºè·¯å¾„"
     $fileDialog.DefaultExt = "csv"
     $fileDialog.AddExtension = $true
-    # Ä¬ÈÏµ¼³öµ½×ÀÃæ£¨ÌáÉıÓÃ»§ÌåÑé£©
+    # é»˜è®¤å¯¼å‡ºåˆ°æ¡Œé¢ï¼ˆæå‡ç”¨æˆ·ä½“éªŒï¼‰
     $fileDialog.InitialDirectory = [Environment]::GetFolderPath("Desktop")
     
     if ($fileDialog.ShowDialog() -ne [System.Windows.Forms.DialogResult]::OK) {
-        $script:connectionStatus = "ÓÃ»§È¡ÏûÁËµ¼³ö²Ù×÷"
+        $script:connectionStatus = "ç”¨æˆ·å–æ¶ˆäº†å¯¼å‡ºæ“ä½œ"
         return
     }
 
     $csvPath = $fileDialog.FileName
-    $script:connectionStatus = "ÕıÔÚ´ÓÓò¿Ø¶ÁÈ¡ÓÃ»§Êı¾İ..."
+    $script:connectionStatus = "æ­£åœ¨ä»åŸŸæ§è¯»å–ç”¨æˆ·æ•°æ®..."
     $script:mainForm.Refresh()
 
     try {
-        # 3. Ô¶³Ì»á»°£º½ö¶ÁÈ¡ADÊı¾İ£¨²»Éæ¼°ÎÄ¼ş²Ù×÷£©
+        # 3. è¿œç¨‹ä¼šè¯ï¼šä»…è¯»å–ADæ•°æ®ï¼ˆä¸æ¶‰åŠæ–‡ä»¶æ“ä½œï¼‰
         $remoteUserData = Invoke-Command -Session $script:remoteSession -ScriptBlock {
 			param($NameOU)
-            # ³õÊ¼»¯Ô¶³Ì½á¹û¶ÔÏó
+            # åˆå§‹åŒ–è¿œç¨‹ç»“æœå¯¹è±¡
             $remoteResult = [PSCustomObject]@{
                 UserData = $null
                 ErrorLogs = @()
             }
 
-            # ¼ì²éADÄ£¿é
+            # æ£€æŸ¥ADæ¨¡å—
             if (-not (Get-Module -Name ActiveDirectory -ListAvailable)) {
-                $remoteResult.ErrorLogs += "Óò¿ØÎ´°²×°Active DirectoryÄ£¿é£¨Ğè°²×°RSAT¹¤¾ß£©"
+                $remoteResult.ErrorLogs += "åŸŸæ§æœªå®‰è£…Active Directoryæ¨¡å—ï¼ˆéœ€å®‰è£…RSATå·¥å…·ï¼‰"
                 return $remoteResult
             }
             try {
                 Import-Module ActiveDirectory -ErrorAction Stop
             }
             catch {
-                $remoteResult.ErrorLogs += "µ¼ÈëADÄ£¿éÊ§°Ü£º$($_.Exception.Message)"
+                $remoteResult.ErrorLogs += "å¯¼å…¥ADæ¨¡å—å¤±è´¥ï¼š$($_.Exception.Message)"
                 return $remoteResult
             }
 
-            # ¶ÁÈ¡ADÓÃ»§£¨ĞÂÔöSurnameºÍGivenNameÊôĞÔ£©
+            # è¯»å–ADç”¨æˆ·ï¼ˆæ–°å¢Surnameå’ŒGivenNameå±æ€§ï¼‰
             $adProperties = @(
                 "SamAccountName", "DisplayName", "UserPrincipalName",
-                "EmailAddress", , "TelephoneNumber", "Description", "GivenName", "Surname",
+                "EmailAddress",  "TelephoneNumber", "Description", "GivenName", "Surname",
                 "AccountExpirationDate", "Enabled", "DistinguishedName",
                 "Department", "Title", "OfficePhone", "LastLogonDate"
             )
             try {
-                # É¸Ñ¡Ìõ¼ş£ºÄ¬ÈÏµ¼³öÌØ¶¨OU
+                # ç­›é€‰æ¡ä»¶ï¼šé»˜è®¤å¯¼å‡ºç‰¹å®šOU
 				$users = Get-ADUser -Filter * -SearchBase $NameOU -Properties $adProperties -ErrorAction Stop				
-                $remoteResult.UserData = $users | Select-Object $adProperties  # ½ö·µ»ØĞèÒªµÄÊôĞÔ
+                $remoteResult.UserData = $users | Select-Object $adProperties  # ä»…è¿”å›éœ€è¦çš„å±æ€§
             }
             catch {
-                $remoteResult.ErrorLogs += "¶ÁÈ¡ADÓÃ»§Ê§°Ü£º$($_.Exception.Message)"
+                $remoteResult.ErrorLogs += "è¯»å–ADç”¨æˆ·å¤±è´¥ï¼š$($_.Exception.Message)"
                 return $remoteResult
             }
 
             return $remoteResult
         } -ArgumentList $script:currentOU -ErrorAction Stop
 
-        # 4. ¼ì²éÔ¶³Ì¶ÁÈ¡ÊÇ·ñ³É¹¦
+        # 4. æ£€æŸ¥è¿œç¨‹è¯»å–æ˜¯å¦æˆåŠŸ
         if ($remoteUserData.ErrorLogs.Count -gt 0) {
-            throw "Ô¶³Ì¶ÁÈ¡Êı¾İÊ§°Ü£º`n$($remoteUserData.ErrorLogs -join "`n")"
+            throw "è¿œç¨‹è¯»å–æ•°æ®å¤±è´¥ï¼š`n$($remoteUserData.ErrorLogs -join "`n")"
         }
         if (-not $remoteUserData.UserData -or $remoteUserData.UserData.Count -eq 0) {
-            [System.Windows.Forms.MessageBox]::Show("Î´´ÓÓò¿Ø¶ÁÈ¡µ½ÈÎºÎADÓÃ»§Êı¾İ", "ÌáÊ¾", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
-            $script:connectionStatus = "µ¼³ö²Ù×÷ÒÑÈ¡Ïû£¨ÎŞÓÃ»§Êı¾İ£©"
+            [System.Windows.Forms.MessageBox]::Show("æœªä»åŸŸæ§è¯»å–åˆ°ä»»ä½•ADç”¨æˆ·æ•°æ®", "æç¤º", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information)
+            $script:connectionStatus = "å¯¼å‡ºæ“ä½œå·²å–æ¶ˆï¼ˆæ— ç”¨æˆ·æ•°æ®ï¼‰"
             return
         }
 
-        # 5. ±¾µØ´¦ÀíÊı¾İ£¨ĞÂÔöSurnameºÍGivenName×Ö¶Î£©
-        $script:connectionStatus = "ÕıÔÚ±¾µØÉú³ÉCSVÎÄ¼ş..."
+        # 5. æœ¬åœ°å¤„ç†æ•°æ®ï¼ˆæ–°å¢Surnameå’ŒGivenNameå­—æ®µï¼‰
+        $script:connectionStatus = "æ­£åœ¨æœ¬åœ°ç”ŸæˆCSVæ–‡ä»¶..."
         $script:mainForm.Refresh()
 
         $exportData = $remoteUserData.UserData | ForEach-Object {
             [PSCustomObject]@{
-                "ÓÃ»§Ãû(SamAccountName)"    = $_.SamAccountName
-                "ÏÔÊ¾Ãû³Æ"                  = $_.DisplayName
-                "ĞÕ(Surname)"               = $_.Surname
-                "Ãû(GivenName)"             = $_.GivenName
-                "ÓÊÏäµØÖ·"                  = $_.EmailAddress
-				"µç»°(TelephoneNumber)"     = if ($_.TelephoneNumber) { $_.TelephoneNumber } else { "ÎŞ" }
-                "ÃèÊö"                      = $_.Description
-                "ÕËºÅ¹ıÆÚÈÕÆÚ"              = if ($_.AccountExpirationDate) { $_.AccountExpirationDate.ToString("yyyy-MM-dd HH:mm:ss") } else { "ÎŞ" }
-                "×îºóµÇÂ¼Ê±¼ä"              = if ($_.LastLogonDate) { $_.LastLogonDate.ToString("yyyy-MM-dd HH:mm:ss") } else { "´ÓÎ´µÇÂ¼" }
-                "ÕËºÅ×´Ì¬"                  = if ($_.Enabled) { "ÆôÓÃ" } else { "½ûÓÃ" }
-                "ËùÊôOU"                    = $_.DistinguishedName
-                "²¿ÃÅ"                      = $_.Department
-                "Ö°Î»"                      = $_.Title
-                "°ì¹«µç»°"                  = $_.OfficePhone
+                "ç”¨æˆ·å(SamAccountName)"    = $_.SamAccountName
+                "æ˜¾ç¤ºåç§°"                  = $_.DisplayName
+                "å§“(Surname)"               = $_.Surname
+                "å(GivenName)"             = $_.GivenName
+                "é‚®ç®±åœ°å€"                  = $_.EmailAddress
+				"ç”µè¯(TelephoneNumber)"     = if ($_.TelephoneNumber) { $_.TelephoneNumber } else { "æ— " }
+                "æè¿°"                      = $_.Description
+                "è´¦å·è¿‡æœŸæ—¥æœŸ"              = if ($_.AccountExpirationDate) { $_.AccountExpirationDate.ToString("yyyy-MM-dd HH:mm:ss") } else { "æ— " }
+                "æœ€åç™»å½•æ—¶é—´"              = if ($_.LastLogonDate) { $_.LastLogonDate.ToString("yyyy-MM-dd HH:mm:ss") } else { "ä»æœªç™»å½•" }
+                "è´¦å·çŠ¶æ€"                  = if ($_.Enabled) { "å¯ç”¨" } else { "ç¦ç”¨" }
+                "æ‰€å±OU"                    = $_.DistinguishedName
+                "éƒ¨é—¨"                      = $_.Department
+                "èŒä½"                      = $_.Title
+                "åŠå…¬ç”µè¯"                  = $_.OfficePhone
             }
         }
 
-        # 6. ±¾µØµ¼³öCSV
+        # 6. æœ¬åœ°å¯¼å‡ºCSV
         try {
-            # Ğ£Ñéµ¼³öÂ·¾¶µÄĞ´ÈëÈ¨ÏŞ
+            # æ ¡éªŒå¯¼å‡ºè·¯å¾„çš„å†™å…¥æƒé™
             $exportDir = [System.IO.Path]::GetDirectoryName($csvPath)
             if (-not (Test-Path -Path $exportDir -PathType Container)) {
-                throw "µ¼³öÄ¿Â¼²»´æÔÚ£º$exportDir"
+                throw "å¯¼å‡ºç›®å½•ä¸å­˜åœ¨ï¼š$exportDir"
             }
-            # ²âÊÔĞ´ÈëÈ¨ÏŞ
+            # æµ‹è¯•å†™å…¥æƒé™
             $testFile = [System.IO.Path]::Combine($exportDir, "test_permission.tmp")
             New-Item -Path $testFile -ItemType File -Force | Out-Null
             Remove-Item -Path $testFile -Force | Out-Null
 
-            # ÕıÊ½µ¼³ö£¨UTF8±àÂë¼æÈİÖĞÎÄ£©
+            # æ­£å¼å¯¼å‡ºï¼ˆUTF8ç¼–ç å…¼å®¹ä¸­æ–‡ï¼‰
             $exportData | Export-Csv -Path $csvPath -NoTypeInformation -Encoding UTF8 -Force -ErrorAction Stop
         }
         catch {
-            throw "±¾µØµ¼³öCSVÊ§°Ü£º$($_.Exception.Message)"
+            throw "æœ¬åœ°å¯¼å‡ºCSVå¤±è´¥ï¼š$($_.Exception.Message)"
         }
 
-        # 7. µ¼³ö³É¹¦£ºÌáÊ¾+´ò¿ªÎÄ¼şÑ¡Ïî
+        # 7. å¯¼å‡ºæˆåŠŸï¼šæç¤º+æ‰“å¼€æ–‡ä»¶é€‰é¡¹
         $msg = @"
-ÅúÁ¿µ¼³ö³É¹¦£¡
+æ‰¹é‡å¯¼å‡ºæˆåŠŸï¼
 ========================================
-µ¼³öÎÄ¼ş£º$csvPath
-µ¼³öÓÃ»§Êı£º$($exportData.Count)
+å¯¼å‡ºæ–‡ä»¶ï¼š$csvPath
+å¯¼å‡ºç”¨æˆ·æ•°ï¼š$($exportData.Count)
 ========================================
-ÊÇ·ñÁ¢¼´´ò¿ªÎÄ¼ş²é¿´£¿
+æ˜¯å¦ç«‹å³æ‰“å¼€æ–‡ä»¶æŸ¥çœ‹ï¼Ÿ
 "@
-        $openResult = [System.Windows.Forms.MessageBox]::Show($msg, "µ¼³öÍê³É", [System.Windows.Forms.MessageBoxButtons]::YesNo, [System.Windows.Forms.MessageBoxIcon]::Information)
+        $openResult = [System.Windows.Forms.MessageBox]::Show($msg, "å¯¼å‡ºå®Œæˆ", [System.Windows.Forms.MessageBoxButtons]::YesNo, [System.Windows.Forms.MessageBoxIcon]::Information)
         if ($openResult -eq [System.Windows.Forms.DialogResult]::Yes) {
-            Start-Process -FilePath $csvPath  # ÓÃÄ¬ÈÏ³ÌĞò´ò¿ªCSV£¨ÈçExcel£©
+            Start-Process -FilePath $csvPath  # ç”¨é»˜è®¤ç¨‹åºæ‰“å¼€CSVï¼ˆå¦‚Excelï¼‰
         }
 
-        $script:connectionStatus = "ADÓÃ»§ÅúÁ¿µ¼³öÒÑÍê³É"
+        $script:connectionStatus = "ADç”¨æˆ·æ‰¹é‡å¯¼å‡ºå·²å®Œæˆ"
     }
     catch {
-        # ´íÎóÍ³Ò»´¦Àí
-        $errorMsg = "µ¼³öÊ§°Ü£º$($_.Exception.Message)"
+        # é”™è¯¯ç»Ÿä¸€å¤„ç†
+        $errorMsg = "å¯¼å‡ºå¤±è´¥ï¼š$($_.Exception.Message)"
         $script:connectionStatus = $errorMsg
         $statusOutputLabel.ForeColor = [System.Drawing.Color]::DarkRed
-        [System.Windows.Forms.MessageBox]::Show($errorMsg, "´íÎó", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
+        [System.Windows.Forms.MessageBox]::Show($errorMsg, "é”™è¯¯", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error)
     }
 }
