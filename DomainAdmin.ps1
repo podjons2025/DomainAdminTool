@@ -42,7 +42,7 @@ $script:groupDefaultShowAll = $true  # 控制组列表默认全显
 # 加载工具类（Utilities）
 . "$PSScriptRoot/Utilities/Helpers.ps1"
 . "$PSScriptRoot/Utilities/PinyinConverter.ps1"
-. "$PSScriptRoot/Utilities/importExportUsers.ps1"
+. "$PSScriptRoot/Utilities/ImportExportUsers.ps1"
 
 # 加载核心函数（Functions）
 . "$PSScriptRoot/Functions/DomainOperations.ps1"
