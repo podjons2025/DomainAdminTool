@@ -466,10 +466,10 @@ function ExportCSVUsers {
             try {
 				
 				if ($allUsersOU) {
-                $users = Get-ADUser -Filter * -Properties $adProperties -ErrorAction Stop
+					$users = Get-ADUser -Filter * -Properties $adProperties -ErrorAction Stop
 				} else {
-                # 筛选条件：导出特定OU
-				$users = Get-ADUser -Filter * -SearchBase $NameOU -Properties $adProperties -ErrorAction Stop
+					# 筛选条件：导出特定OU
+					$users = Get-ADUser -Filter * -SearchBase $NameOU -Properties $adProperties -ErrorAction Stop
 				}
                 $remoteResult.UserData = $users | Select-Object $adProperties  # 仅返回需要的属性
             }
