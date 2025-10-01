@@ -1,4 +1,4 @@
-SamAccountName,DisplayName,Description,Password,Group,AccountExpirationDate,EmailAddress
-bocm_oyangduozai,欧阳朵在,中行总行-欧阳朵在,Password@001,SHUZIHUOBI,2025/12/31,suhuisu@bank-of-china
-boc_ zenghonglan,曾红蓝,,,SHUZIHUOBI,,
-bocm_simatianguo,司马天果,中行总行-司马天果,,SHUZIHUOBI,2025/10/30,
+SamAccountName,DisplayName,Description,Password,Group,AccountExpirationDate,EmailAddress,TelePhone
+ibm_oyangduozai3,欧阳朵在1,IBM-欧阳朵在,Password@001,SHUZIHUOBI,2025/12/31,suhuisu@bank-of-china,1380000000
+MCR_ zenghonglan3,曾红蓝1,,,SHUZIHUOBI,,,10086
+boc_simatianguo3,司马天果1,mcr-司马天果,,SHUZIHUOBI,2025/10/30,,10000
