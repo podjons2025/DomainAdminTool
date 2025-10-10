@@ -12,6 +12,41 @@ $script:mainForm.FormBorderStyle = "Sizable"
 $script:mainForm.MaximizeBox = $true
 $script:mainForm.BackColor = [System.Drawing.Color]::FromArgb(245, 245, 245)
 
+# 主窗口大小变化事件（强制刷新所有父容器+延迟适配）
+$script:mainForm.Add_SizeChanged({
+    # 1. 强制刷新所有嵌套父面板（确保子控件尺寸同步更新）
+    $script:mainPanel.PerformLayout()          # 最外层主面板
+    $script:userManagementPanel.PerformLayout()# 用户管理面板
+    $script:groupManagementPanel.PerformLayout()# 组管理面板
+    $script:userListPanel.PerformLayout()      # 用户列表子面板
+    $script:groupListPanel.PerformLayout()     # 组列表子面板
+
+    # 2. 最大化/还原：延迟50ms（等待系统完成布局），最小化不处理
+    if ($script:mainForm.WindowState -in [System.Windows.Forms.FormWindowState]::Maximized, [System.Windows.Forms.FormWindowState]::Normal) {
+        Start-Sleep -Milliseconds 50  # 给系统足够时间更新控件尺寸
+        Update-DynamicUserPageSize
+        Update-DynamicGroupPageSize
+    }
+})
+
+# DataGridView创建后立即计算首次动态行数（避免初始值为0）
+$script:userDataGridView.PerformLayout()  # 确保DGV布局已初始化
+Update-DynamicUserPageSize  # 提前计算动态行数
+
+$script:userDataGridView.Add_SizeChanged({
+    Start-Sleep -Milliseconds 50
+    Update-DynamicUserPageSize
+})
+
+# DataGridView创建后立即计算首次动态行数（避免初始值为0）
+$script:groupDataGridView.PerformLayout()  # 确保DGV布局已初始化
+Update-DynamicGroupPageSize  # 提前计算动态行数
+
+$script:groupDataGridView.Add_SizeChanged({
+    Start-Sleep -Milliseconds 50
+    Update-DynamicGroupPageSize
+})
+
 # 主布局面板（5行结构）
 $script:mainPanel = New-Object System.Windows.Forms.TableLayoutPanel
 $script:mainPanel.Dock = "Fill"
@@ -39,3 +74,13 @@ $script:mainPanel.Controls.Add($script:statusOutputLabel, 0, 4)
 
 # 将主面板添加到主窗体
 $script:mainForm.Controls.Add($script:mainPanel)
+
+# 主窗口加载完成事件（新增：窗口显示后再计算初始行数）
+$script:mainForm.Add_Load({
+    Start-Sleep -Milliseconds 100  # 等待窗口完全渲染
+    Update-DynamicUserPageSize
+    Update-DynamicGroupPageSize
+    # 强制刷新DataGridView，确保滚动条状态更新
+    $script:userDataGridView.Refresh()
+    $script:groupDataGridView.Refresh()
+})

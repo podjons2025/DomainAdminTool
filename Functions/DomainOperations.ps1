@@ -69,6 +69,7 @@ function ConnectToDomain {
         $errorMsg = $_.Exception.Message
         if ($errorMsg -match "WinRM") { $errorMsg += "`n请确保远程域控已启用WinRM服务（运行winrm quickconfig）" }
         elseif ($errorMsg -match "ActiveDirectory") { $errorMsg += "`n请确保远程域控已安装AD模块" }
+		Write-Host $errorMsg
         $script:connectionStatus = "连接失败: $errorMsg"
         UpdateStatusBar
         $script:statusOutputLabel.ForeColor = [System.Drawing.Color]::DarkRed

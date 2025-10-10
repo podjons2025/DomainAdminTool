@@ -55,6 +55,9 @@ function LoadGroupList {
         $script:groupPaginationPanel.Visible = $true
         # ----------------------------------------------------------------
         
+		# 首次加载后初始化动态分页大小
+		Update-DynamicGroupPageSize
+		
         # 更新状态（逻辑不变）
         $script:groupCountStatus = $script:allGroups.Count
         $script:connectionStatus = "已加载 OU: $($script:currentOU) 下的 $($script:groupCountStatus) 个组"

@@ -72,8 +72,10 @@ $script:userDataGridView.AutoGenerateColumns = $false
 $script:userDataGridView.AllowUserToAddRows = $false
 $script:userDataGridView.RowHeadersVisible = $false
 $script:userDataGridView.AlternatingRowsDefaultCellStyle.BackColor = [System.Drawing.Color]::FromArgb(235, 245, 255)
-$script:userDataGridView.ColumnHeadersHeightSizeMode = "AutoSize"
-$script:userDataGridView.EditMode = [System.Windows.Forms.DataGridViewEditMode]::EditOnEnter
+#$script:userDataGridView.ColumnHeadersHeightSizeMode = "AutoSize"
+$script:userDataGridView.RowTemplate.Height = 20  # 行高
+$script:userDataGridView.AutoSizeRowsMode = [System.Windows.Forms.DataGridViewAutoSizeRowsMode]::None  # 禁用自动行高
+#$script:userDataGridView.EditMode = [System.Windows.Forms.DataGridViewEditMode]::EditOnEnter
 
 # 列定义（保持不变）
 $script:colDisplayName = New-Object System.Windows.Forms.DataGridViewTextBoxColumn
@@ -442,7 +444,7 @@ $script:labelPrefix.Margin = New-Object System.Windows.Forms.Padding(0, 0, 5, 0)
 $script:accountSubPanel.Controls.Add($script:labelPrefix, 1, 0)
 
 $script:textPrefix = New-Object System.Windows.Forms.TextBox
-$script:textPrefix.Text = "ABC_"
+$script:textPrefix.Text = "IBM_"
 $script:textPrefix.Dock = "Fill"
 $script:textPrefix.Margin = New-Object System.Windows.Forms.Padding(0, 0, 0, 0)
 $script:textPrefix.Add_TextChanged({ ConvertToPinyin })  # 来自PinyinConverter.ps1

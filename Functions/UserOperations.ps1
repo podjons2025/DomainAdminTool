@@ -70,6 +70,9 @@ function LoadUserList {
         $script:userPaginationPanel.Visible = $true  # 强制显示分页控件
         # ----------------------------------------------------------------
         
+		# 首次加载后初始化动态分页大小
+		Update-DynamicUserPageSize
+		
         # 更新状态（逻辑不变）
         $script:userCountStatus = $script:allUsers.Count
         $script:connectionStatus = "已加载 OU: $($script:currentOU) 下的 $($script:userCountStatus) 个用户"

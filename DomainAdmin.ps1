@@ -28,16 +28,17 @@ $script:userCountStatus = "0"           # 用户计数
 $script:groupCountStatus = "0"          # 组计数
 
 # ---------------------- 分页功能全局变量 ----------------------
-$script:pageSize = 6                  # 每页显示条数（固定6条）
-# 用户列表分页状态
-$script:currentUserPage = 1             # 当前用户页码
-$script:totalUserPages = 1              # 用户总页数
-# 组列表分页状态
-$script:currentGroupPage = 1            # 当前组页码
-$script:totalGroupPages = 1             # 组总页数
+#$script:fixedPageSize = 6                 # 固定默认分页大小
+# 动态分页大小（随窗口可视区域变化，核心变量）
+$script:dynamicUserPageSize = 0  # 用户列表动态行数
+$script:dynamicGroupPageSize = 0 # 组列表动态行数
 
-$script:defaultShowAll = $true  # 控制用户列表默认全显
-$script:groupDefaultShowAll = $true  # 控制组列表默认全显
+# 其他原有变量（不变）
+$script:currentUserPage = 1              # 当前用户页码
+$script:totalUserPages = 1               # 用户总页数
+$script:currentGroupPage = 1             # 当前组页码
+$script:totalGroupPages = 1              # 组总页数
+
 
 # 加载工具类（Utilities）
 . "$PSScriptRoot/Utilities/Helpers.ps1"

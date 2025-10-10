@@ -16,7 +16,7 @@ $script:groupListPanel.Padding = 10
 
 $script:groupListTable = New-Object System.Windows.Forms.TableLayoutPanel
 $script:groupListTable.Dock = "Fill"
-$script:groupListTable.RowCount = 3  # 调整行顺序：搜索框→组DataGridView→分页面板
+$script:groupListTable.RowCount = 3  # 顺序：搜索框→组DataGridView→分页面板
 $script:groupListTable.RowStyles.Add((New-Object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Absolute, 40)))  # 搜索框（固定高度）
 $script:groupListTable.RowStyles.Add((New-Object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Percent, 100))) # 组DataGridView（占满中间空间）
 $script:groupListTable.RowStyles.Add((New-Object System.Windows.Forms.RowStyle([System.Windows.Forms.SizeType]::Absolute, 35)))  # 分页面板（固定高度，位于底部）
@@ -69,7 +69,10 @@ $script:groupDataGridView.AutoGenerateColumns = $false
 $script:groupDataGridView.AllowUserToAddRows = $false
 $script:groupDataGridView.RowHeadersVisible = $false
 $script:groupDataGridView.AlternatingRowsDefaultCellStyle.BackColor = [System.Drawing.Color]::FromArgb(235, 245, 255)
-$script:groupDataGridView.ColumnHeadersHeightSizeMode = "AutoSize"
+#$script:groupDataGridView.ColumnHeadersHeightSizeMode = "AutoSize"
+$script:groupDataGridView.RowTemplate.Height = 20
+$script:groupDataGridView.AutoSizeRowsMode = [System.Windows.Forms.DataGridViewAutoSizeRowsMode]::None
+#$script:groupDataGridView.EditMode = [System.Windows.Forms.DataGridViewEditMode]::EditOnEnter
 
 # 组列定义（保持不变）
 $script:colGroupName = New-Object System.Windows.Forms.DataGridViewTextBoxColumn

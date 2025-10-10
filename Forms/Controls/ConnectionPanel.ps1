@@ -36,9 +36,9 @@ $script:comboDomain.DropDownStyle = "DropDownList"
 $script:comboDomain.DisplayMember = "Name"
 $script:comboDomain.ValueMember = "Server"
 $script:comboDomain.Items.AddRange(@(	
-    [PSCustomObject]@{Name = "域控（上海）- serverAD.abc.com"; Server = "serverAD.abc.com"; SystemAccount= "abc\admin"; Password = "Password@001"},
-    [PSCustomObject]@{Name = "域控（北京）- abc03.abc01.com"; Server = "abc03.abc01.com"; SystemAccount= "abc01\administrator"; Password = "Password@001"},
-    [PSCustomObject]@{Name = "测试域控（北京）- serverAD3.abc3.com"; Server = "serverAD3.abc3.com"; SystemAccount= "abc3\admin"; Password = ""}	
+    [PSCustomObject]@{Name = "域控（广州）- serverAD.abc.com"; Server = "serverAD.abc.com"; SystemAccount= "abc\admin"; Password = "Abc123456"},
+    [PSCustomObject]@{Name = "域控（上海）- abc03.abc01.com"; Server = "abc03.abc01.com"; SystemAccount= "abc01\administrator"; Password = "Password123"},
+    [PSCustomObject]@{Name = "测试域控（北京）- serverAD3.abc03.com"; Server = "serverAD3.abc03.com"; SystemAccount= "abc03\admin"; Password = ""}	
 ))
 $script:comboDomain.SelectedIndex = 0
 $script:comboDomain.Add_SelectedIndexChanged({
