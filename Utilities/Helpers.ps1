@@ -161,7 +161,16 @@ function Get-TotalPages {
         [int]$totalCount,
         [int]$pageSize
     )
-    if ($totalCount -eq 0) { return 0 }
+    # 1. 处理总数据量为 0 的情况（直接返回 0）
+    if ($totalCount -eq 0) {
+        return 0
+    }
+    # 2. 关键修复：确保 pageSize 至少为 1（避免除以零）
+    if ($pageSize -le 0) {
+        $pageSize = 1  # 强制设置为 1，确保除法有效
+        #Write-Host "警告：pageSize 为 0，已强制设为 1"  # 调试用
+    }
+    # 3. 安全计算总页数
     return [math]::Ceiling($totalCount / $pageSize)
 }
 
@@ -210,7 +219,8 @@ function Get-VisibleRowCount {
     if ($script:filteredGroups.Count -gt 0 -and $dgv.Name -eq "groupDataGridView") {
         $visibleRows = [math]::Min($visibleRows, $script:filteredGroups.Count)
     }
-
+	
+	$visibleRows = [math]::Max(1, $visibleRows)
     #Write-Host "计算出可视行数: $($visibleRows)"
     return $visibleRows
 }
@@ -288,15 +298,5 @@ function Check-ScrollBar {
         return
     }
 
-    # 计算“所有数据需要的高度” vs “DGV可用高度”
-    $totalDataHeight = $dataCount * $dgv.RowTemplate.Height + $dgv.ColumnHeadersHeight
-    $dgvAvailableHeight = $dgv.ClientSize.Height - $dgv.Padding.Top - $dgv.Padding.Bottom
-
-    # 若数据高度 > 可用高度，显示垂直滚动条；否则隐藏
-    if ($totalDataHeight -gt $dgvAvailableHeight) {
-        $dgv.ScrollBars = [System.Windows.Forms.ScrollBars]::Vertical
-    } else {
-        $dgv.ScrollBars = [System.Windows.Forms.ScrollBars]::None
-    }
-    #Write-Host "DGV滚动条状态：$($dgv.ScrollBars)"  # 调试用
+	$dgv.ScrollBars = [System.Windows.Forms.ScrollBars]::Both
 }
