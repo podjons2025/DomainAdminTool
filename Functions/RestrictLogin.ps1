@@ -1,5 +1,5 @@
 <# 
-核心函数：弹出批量限制登录计算机窗口（双列表版）
+核心函数：弹出批量限制登录计算机窗口（双列表版，显示主机名和IP）
 #>
 function ShowRestrictLoginForm {
     if (-not $script:domainContext) {
@@ -20,7 +20,7 @@ function ShowRestrictLoginForm {
     }
 	
 	
-    # ---------------------- 新增：超级管理员身份校验 ----------------------
+    #超级管理员身份校验
     try {
         $adminUsers = @()  # 存储检测到的域管理员用户
         # 遍历每个选中用户，查询其是否属于Domain Admins组
@@ -66,7 +66,6 @@ function ShowRestrictLoginForm {
         )
         return
     }
-    # ---------------------- 新增结束 ----------------------	
 
     # 2. 创建新窗口
     $restrictForm = New-Object System.Windows.Forms.Form
@@ -77,12 +76,15 @@ function ShowRestrictLoginForm {
     $restrictForm.MaximizeBox = $false
     $restrictForm.MinimizeBox = $false
 
-    # 新增：创建ToolTip组件用于显示按钮提示
+    # 创建ToolTip组件用于显示按钮提示
     $toolTip = New-Object System.Windows.Forms.ToolTip
     $toolTip.AutoPopDelay = 5000  # 提示显示时间（毫秒）
     $toolTip.InitialDelay = 1000  # 鼠标悬停后延迟显示时间
     $toolTip.ReshowDelay = 500    # 连续显示提示的延迟时间
     $toolTip.ShowAlways = $true   # 即使窗口不在焦点也显示
+
+    # 存储显示文本到原始主机名的映射（关键）
+    $script:computerNameMap = @{}
 
     # 3. 窗口布局：使用TableLayoutPanel排版
     $mainTable = New-Object System.Windows.Forms.TableLayoutPanel
@@ -117,7 +119,8 @@ function ShowRestrictLoginForm {
     $leftPanel.Controls.Add($lblAllowed)  # 标签在列表上方
     $mainTable.Controls.Add($leftPanel, 0, 0)  # 左列表放在第0列第0行
 
-    # ---------------------- 5. 中间按钮：列表移动控制----------------------
+    # ---------------------- 5. 中间按钮：列表移动控制（调整布局） ----------------------
+    # 使用FlowLayoutPanel替代普通Panel，更易控制按钮间距和位置
     $btnPanel = New-Object System.Windows.Forms.FlowLayoutPanel
     $btnPanel.Dock = "Fill"
     $btnPanel.Padding = New-Object System.Windows.Forms.Padding(0, 30, 0, 0)  # 顶部留30像素空白，使按钮整体下移
@@ -202,21 +205,39 @@ function ShowRestrictLoginForm {
     $mainTable.Controls.Add($bottomBtnPanel, 0, 1)  # 底部按钮放在第0列第1行
     $mainTable.SetColumnSpan($bottomBtnPanel, 5)  # 跨5列（占满底部宽度）
 
-    # ---------------------- 8. 加载域内计算机（核心逻辑） ----------------------
+    # ---------------------- 8. 加载域内计算机（核心逻辑，修改显示格式） ----------------------
     function LoadDomainComputers {
         try {
-            # 远程从域控获取所有计算机（只取计算机名，去重）
+            # 清空映射表
+            $script:computerNameMap.Clear()
+
+            # 远程从域控获取所有计算机（包含IP地址）
             $allComputers = Invoke-Command -Session $script:remoteSession -ScriptBlock {
                 Import-Module ActiveDirectory -ErrorAction Stop
-                # 获取所有启用的计算机，排除重复（按Name去重）
-                Get-ADComputer -Filter { Enabled -eq $true } -Properties Name | 
-                    Select-Object -ExpandProperty Name -Unique | 
-                    Sort-Object  # 按名称排序
+                # 获取所有启用的计算机，包含名称和IP地址
+                Get-ADComputer -Filter { Enabled -eq $true } -Properties Name, IPv4Address | 
+                    Select-Object Name, IPv4Address | 
+                    Sort-Object Name  # 按名称排序
             } -ErrorAction Stop
 
-            # 填充右侧列表
+            # 处理计算机数据，生成"主机名--（IP）"格式的显示文本
+            $displayTexts = @()
+            foreach ($comp in $allComputers) {
+                $hostName = $comp.Name
+                $ipAddress = $comp.IPv4Address
+                
+                # 处理无IP地址的情况
+                $displayIp = if ($ipAddress) { $ipAddress } else { "无IP" }
+                $displayText = "$hostName -- ($displayIp)"
+                
+                # 添加到显示列表和映射表
+                $displayTexts += $displayText
+                $script:computerNameMap[$displayText] = $hostName  # 映射显示文本到原始主机名
+            }
+
+            # 填充右侧列表（域内所有计算机）
             $lstAllComputers.Items.Clear()
-            $allComputers | ForEach-Object { $lstAllComputers.Items.Add($_) | Out-Null }
+            $displayTexts | ForEach-Object { $lstAllComputers.Items.Add($_) | Out-Null }
 
             # 加载选中用户的【现有允许登录计算机】
             $firstUserWorkstations = $null
@@ -240,17 +261,34 @@ function ShowRestrictLoginForm {
                 }
             }
 
-            # 填充左侧列表
+            # 填充左侧列表（允许登录的计算机）
             $lstAllowed.Items.Clear()
             if ($hasDifferentSettings) {
                 [System.Windows.Forms.MessageBox]::Show("选中的用户现有登录限制设置不一致，将统一按本次选择重新设置", "提示", [System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Warning)
             }
             elseif ($firstUserWorkstations) {
                 # 拆分现有计算机名（按逗号分割，去空）
-                $firstUserWorkstations -split "," | 
+                $allowedHostNames = $firstUserWorkstations -split "," | 
                     ForEach-Object { $_.Trim() } | 
-                    Where-Object { $_ -ne "" } | 
-                    ForEach-Object { $lstAllowed.Items.Add($_) | Out-Null }
+                    Where-Object { $_ -ne "" }
+
+                # 转换为主机名--（IP）格式显示
+                foreach ($hostName in $allowedHostNames) {
+                    # 查找对应的显示文本
+                    $mappedText = $script:computerNameMap.GetEnumerator() | 
+                        Where-Object { $_.Value -eq $hostName } | 
+                        Select-Object -ExpandProperty Key -First 1
+
+                    if ($mappedText) {
+                        $lstAllowed.Items.Add($mappedText) | Out-Null
+                    }
+                    else {
+                        # 处理已不存在的计算机（在域中找不到）
+                        $lstAllowed.Items.Add("$hostName--（已不存在）") | Out-Null
+                        # 添加到映射表，确保保存时能正确提取原始主机名
+                        $script:computerNameMap["$hostName--（已不存在）"] = $hostName
+                    }
+                }
             }
 
         }
@@ -304,13 +342,25 @@ function ShowRestrictLoginForm {
     })
     
 
-# ---------------------- 10. 保存限制设置（核心逻辑） ----------------------
+# ---------------------- 10. 保存限制设置（提取原始主机名） ----------------------
     $btnSave.Add_Click({
-        # 1. 处理允许登录计算机列表（空列表时标记为清空）
-        $allowedComputers = ($lstAllowed.Items | ForEach-Object { $_ }) -join ","
-        $isClearRestriction = [string]::IsNullOrEmpty($allowedComputers)  # 判断是否为“撤离限制”（清空列表）
+        # 1. 从左侧列表提取原始主机名
+        $allowedHostNames = @()
+        foreach ($displayItem in $lstAllowed.Items) {
+            # 从映射表获取原始主机名
+            if ($script:computerNameMap.ContainsKey($displayItem)) {
+                $allowedHostNames += $script:computerNameMap[$displayItem]
+            }
+            else {
+                # 从显示文本中提取主机名（按格式拆分）
+                $hostNamePart = $displayItem -split "--", 2 | Select-Object -First 1
+                $allowedHostNames += $hostNamePart
+            }
+        }
+        $allowedComputers = $allowedHostNames -join ","
+        $isClearRestriction = [string]::IsNullOrEmpty($allowedComputers)  # 判断是否为“撤离限制”
 
-        # 2. 确认保存（提示信息优化，增加“清空限制”说明）
+        # 2. 确认保存
         $confirmMsg = if ($isClearRestriction) {
             "将为 $($selectedUsers.Count) 个用户【撤离登录限制】（允许登录所有计算机）`n`n确定保存吗？"
         } else {
@@ -325,49 +375,43 @@ function ShowRestrictLoginForm {
         if ($confirm -ne "Yes") { return }
 
         try {
-            # 新增：记录成功/失败的用户详情（含DisplayName和SamAccountName）
+            # 记录成功/失败的用户详情
             $successUsers = @()  # 格式："显示名（账号名）"
             $failUsers = @()     # 格式："显示名（账号名）- 失败原因"
 
             # 遍历每个选中用户，批量设置
             foreach ($row in $selectedUsers) {
-                # 获取用户的DisplayName和SamAccountName（从选中行的单元格中读取）
                 $displayName = $row.Cells["DisplayName"].Value
                 $samAccountName = $row.Cells["SamAccountName"].Value
-                # 处理字段为空的情况（避免显示异常）
                 $displayName = if ([string]::IsNullOrEmpty($displayName)) { "未设置显示名" } else { $displayName }
-                $userLabel = "$displayName（$samAccountName）"  # 统一的用户标识格式
+                $userLabel = "$displayName（$samAccountName）"
 
                 try {
                     Invoke-Command -Session $script:remoteSession -ScriptBlock {
                         param($sam, $workstations, $isClear)
                         Import-Module ActiveDirectory -ErrorAction Stop
 
-                        # 清空限制用-Clear，设置限制用-Replace
                         if ($isClear) {
-                            # 撤离限制：清除userWorkstations属性（允许登录所有计算机）
+                            # 撤离限制：清除userWorkstations属性
                             Set-ADUser -Identity $sam -Clear userWorkstations -ErrorAction Stop
                         } else {
-                            # 设置限制：更新userWorkstations属性（指定允许登录的计算机）
+                            # 设置限制：更新userWorkstations属性
                             Set-ADUser -Identity $sam -Replace @{userWorkstations = $workstations} -ErrorAction Stop
                         }
                     } -ArgumentList $samAccountName, $allowedComputers, $isClearRestriction -ErrorAction Stop
 
-                    # 成功：添加到成功列表
                     $successUsers += $userLabel
                 }
                 catch {
-                    # 失败：添加到失败列表（含原因）
                     $failReason = $_.Exception.Message
                     $failUsers += "$userLabel - $failReason"
                 }
             }
 
-            # 3. 生成结果提示（完整显示成功/失败用户详情）
+            # 3. 生成结果提示
             $resultTitle = if ($failUsers.Count -eq 0) { "成功" } else { "结果" }
             $resultIcon = if ($failUsers.Count -eq 0) { [System.Windows.Forms.MessageBoxIcon]::Information } else { [System.Windows.Forms.MessageBoxIcon]::Warning }
             
-            # 拼接结果内容
             $resultMsg = "设置完成！`n"
             $resultMsg += "`n成功用户（共 $($successUsers.Count) 个）："
             if ($successUsers.Count -eq 0) {
@@ -382,7 +426,6 @@ function ShowRestrictLoginForm {
                 $resultMsg += "`n$($failUsers -join "`n")"
             }
 
-            # 显示结果
             [System.Windows.Forms.MessageBox]::Show($resultMsg, $resultTitle, [System.Windows.Forms.MessageBoxButtons]::OK, $resultIcon)
 
             # 全部成功时自动关闭窗口
@@ -405,4 +448,7 @@ function ShowRestrictLoginForm {
     # ---------------------- 12. 窗口显示 ----------------------
     $restrictForm.Controls.Add($mainTable)
     $restrictForm.ShowDialog() | Out-Null
+
+    # 清理脚本级变量
+    Remove-Variable -Name computerNameMap -Scope Script -ErrorAction SilentlyContinue
 }
