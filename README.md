@@ -1,5 +1,5 @@
 增加可执行文件：
-Invoke-ps2exe .\DomainAdmin.ps1 .\DomainAdmin.exe  -iconFile '.\ads.ico' -noConsole  -requireAdmin  -product 'AD-TOOLS' -description 'AD-TOOLS'  -version '2.76' -x64 -STA
+Invoke-ps2exe .\DomainAdmin.ps1 .\DomainAdmin.exe  -iconFile '.\ads.ico' -noConsole  -requireAdmin  -product 'AD-TOOLS' -description 'AD-TOOLS'  -version '2.8.0' -x64 -STA
 
 可以任意一台域控内机子进行域管理操作
 
